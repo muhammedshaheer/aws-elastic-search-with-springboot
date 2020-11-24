@@ -11,7 +11,7 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
-@Document(indexName = "article")
+@Document(indexName = "${es.article.index.name}")
 public class Article {
 
     @Id

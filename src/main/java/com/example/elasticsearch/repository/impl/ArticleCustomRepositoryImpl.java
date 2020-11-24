@@ -40,7 +40,8 @@ public class ArticleCustomRepositoryImpl implements ArticleCustomRepository {
     @Override
     public IndexResponse indexArticles(Article article) throws IOException {
         Map articleMap = objectMapper.convertValue(article, Map.class);
-        IndexRequest indexRequest = new IndexRequest(INDEX, TYPE, article.getId())
+        IndexRequest indexRequest = new IndexRequest(INDEX)
+                .id(article.getId())
                 .source(articleMap);
 
         return restHighLevelClient.index(indexRequest, RequestOptions.DEFAULT);

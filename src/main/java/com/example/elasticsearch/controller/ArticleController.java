@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
+import java.util.List;
 
 @RestController
 public class ArticleController {
@@ -25,7 +26,7 @@ public class ArticleController {
     }
 
     @GetMapping("/article")
-    public void getArticleByTitle(@RequestParam(name = "title") String title) throws IOException {
-        articleService.getArticleByTitle(title);
+    public List<Article> getArticleByTitle(@RequestParam(name = "title") String title) throws IOException {
+        return articleService.getArticleByTitle(title);
     }
 }
