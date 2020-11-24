@@ -17,6 +17,8 @@ public class Article {
     @Id
     private String id;
 
+    private String articleId;
+
     private String title;
 
     private List<Author> authors;
