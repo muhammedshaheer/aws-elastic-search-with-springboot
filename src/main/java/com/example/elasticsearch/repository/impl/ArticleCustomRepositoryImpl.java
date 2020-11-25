@@ -2,6 +2,7 @@ package com.example.elasticsearch.repository.impl;
 
 import com.example.elasticsearch.document.Article;
 import com.example.elasticsearch.repository.ArticleCustomRepository;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
@@ -39,7 +40,8 @@ public class ArticleCustomRepositoryImpl implements ArticleCustomRepository {
 
     @Override
     public IndexResponse indexArticles(Article article) throws IOException {
-        Map articleMap = objectMapper.convertValue(article, Map.class);
+        Map<String, Object> articleMap = objectMapper.convertValue(article, new TypeReference<Map<String, Object>>() {
+        });
         IndexRequest indexRequest = new IndexRequest(INDEX)
                 .id(article.getId())
                 .source(articleMap);
