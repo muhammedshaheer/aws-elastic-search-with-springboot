@@ -15,6 +15,8 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.sort.SortOrder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
@@ -23,12 +25,10 @@ import java.util.Map;
 
 @Repository
 public class ArticleCustomRepositoryImpl implements ArticleCustomRepository {
+    private static final Logger logger = LoggerFactory.getLogger(ArticleCustomRepositoryImpl.class);
 
     @Value("${es.article.index.name}")
-    private String INDEX;
-
-    @Value("${es.article.index.type}")
-    private String TYPE;
+    private String index;
 
     private final RestHighLevelClient restHighLevelClient;
     private final ObjectMapper objectMapper;
@@ -39,18 +39,23 @@ public class ArticleCustomRepositoryImpl implements ArticleCustomRepository {
     }
 
     @Override
-    public IndexResponse indexArticles(Article article) throws IOException {
-        Map<String, Object> articleMap = objectMapper.convertValue(article, new TypeReference<Map<String, Object>>() {
+    public IndexResponse indexArticles(Article article) {
+        Map<String, Object> articleMap = objectMapper.convertValue(article, new TypeReference<>() {
         });
-        IndexRequest indexRequest = new IndexRequest(INDEX)
+        IndexRequest indexRequest = new IndexRequest(index)
                 .id(article.getId())
                 .source(articleMap);
 
-        return restHighLevelClient.index(indexRequest, RequestOptions.DEFAULT);
+        try {
+            return restHighLevelClient.index(indexRequest, RequestOptions.DEFAULT);
+        } catch (IOException e) {
+            logger.error("Error in indexing articles", e);
+            return null;
+        }
     }
 
     @Override
-    public SearchResponse findByTitle(String title) throws IOException {
+    public SearchResponse findByTitle(String title) {
         BoolQueryBuilder queryBuilder = QueryBuilders.boolQuery()
                 .must(QueryBuilders.termQuery("title.keyword", title));
 
@@ -63,8 +68,13 @@ public class ArticleCustomRepositoryImpl implements ArticleCustomRepository {
 
         SearchRequest searchRequest = new SearchRequest();
         searchRequest.source(searchSourceBuilder);
-        searchRequest.indices(INDEX);
+        searchRequest.indices(index);
 
-        return restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
+        try {
+            return restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
+        } catch (IOException e) {
+            logger.error("Error in searching articles", e);
+            return null;
+        }
     }
 }

@@ -7,7 +7,7 @@ import org.elasticsearch.action.search.SearchResponse;
 import java.io.IOException;
 
 public interface ArticleCustomRepository {
-    SearchResponse findByTitle(String title) throws IOException;
+    SearchResponse findByTitle(String title);
 
-    IndexResponse indexArticles(Article article) throws IOException;
+    IndexResponse indexArticles(Article article);
 }

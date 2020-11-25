@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.util.List;
 
 public interface ArticleService {
-    void indexArticles(Article article) throws IOException;
+    void indexArticles(Article article);
 
-    List<Article> getArticleByTitle(String title) throws IOException;
+    List<Article> getArticleByTitle(String title);
 }

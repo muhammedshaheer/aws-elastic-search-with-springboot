@@ -37,7 +37,7 @@ public class ArticleServiceImpl implements ArticleService {
     }
 
     @Override
-    public void indexArticles(Article article) throws IOException {
+    public void indexArticles(Article article) {
         UUID uuid = UUID.randomUUID();
         String articleId = uuid.toString();
         article.setId(articleId);
@@ -47,7 +47,7 @@ public class ArticleServiceImpl implements ArticleService {
     }
 
     @Override
-    public List<Article> getArticleByTitle(String title) throws IOException {
+    public List<Article> getArticleByTitle(String title) {
         SearchResponse searchResponse = articleCustomRepository.findByTitle(title);
         SearchHits hits = searchResponse.getHits();
         SearchHit[] searchHits = hits.getHits();
