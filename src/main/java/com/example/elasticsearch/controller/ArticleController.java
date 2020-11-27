@@ -2,6 +2,7 @@ package com.example.elasticsearch.controller;
 
 import com.example.elasticsearch.document.Article;
 import com.example.elasticsearch.service.ArticleService;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,7 +32,12 @@ public class ArticleController {
     }
 
     @GetMapping("/article/{id}")
-    public Article getArticleById(@PathVariable("id") String id){
+    public Article getArticleById(@PathVariable("id") String id) {
         return articleService.getArticleById(id);
+    }
+
+    @DeleteMapping("/article/{id}")
+    public void deleteArticleById(@PathVariable("id") String id) {
+        articleService.deleteArticleById(id);
     }
 }

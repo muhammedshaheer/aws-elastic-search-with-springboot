@@ -5,6 +5,8 @@ import com.example.elasticsearch.repository.ArticleCustomRepository;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.elasticsearch.ElasticsearchStatusException;
+import org.elasticsearch.action.delete.DeleteRequest;
+import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequest;
@@ -55,6 +57,11 @@ public class ArticleCustomRepositoryImpl implements ArticleCustomRepository {
         } catch (IOException e) {
             logger.error("Error in indexing articles", e);
             return null;
+        } catch (ElasticsearchStatusException e) {
+            if (e.status() == RestStatus.NOT_FOUND) {
+                logger.error("Invalid index", e);
+            }
+            return null;
         }
     }
 
@@ -79,6 +86,11 @@ public class ArticleCustomRepositoryImpl implements ArticleCustomRepository {
         } catch (IOException e) {
             logger.error("Error in searching articles", e);
             return null;
+        } catch (ElasticsearchStatusException e) {
+            if (e.status() == RestStatus.NOT_FOUND) {
+                logger.error("Invalid index", e);
+            }
+            return null;
         }
     }
 
@@ -91,6 +103,23 @@ public class ArticleCustomRepositoryImpl implements ArticleCustomRepository {
             return restHighLevelClient.get(getRequest, RequestOptions.DEFAULT);
         } catch (IOException e) {
             logger.error("Error in getting article by id", e);
+            return null;
+        } catch (ElasticsearchStatusException e) {
+            if (e.status() == RestStatus.NOT_FOUND) {
+                logger.error("Invalid index", e);
+            }
+            return null;
+        }
+    }
+
+    @Override
+    public DeleteResponse deleteArticleById(String id) {
+        DeleteRequest deleteRequest = new DeleteRequest(index, id);
+
+        try {
+            return restHighLevelClient.delete(deleteRequest, RequestOptions.DEFAULT);
+        } catch (IOException e) {
+            logger.error("Error in deleting article by id", e);
             return null;
         } catch (ElasticsearchStatusException e) {
             if (e.status() == RestStatus.NOT_FOUND) {

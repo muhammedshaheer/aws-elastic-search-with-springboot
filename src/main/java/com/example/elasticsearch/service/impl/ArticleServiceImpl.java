@@ -5,6 +5,8 @@ import com.example.elasticsearch.repository.ArticleCustomRepository;
 import com.example.elasticsearch.service.ArticleService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.elasticsearch.action.DocWriteResponse;
+import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchResponse;
@@ -49,21 +51,26 @@ public class ArticleServiceImpl implements ArticleService {
     @Override
     public List<Article> getArticleByTitle(String title) {
         SearchResponse searchResponse = articleCustomRepository.findByTitle(title);
-        SearchHits hits = searchResponse.getHits();
-        SearchHit[] searchHits = hits.getHits();
-        List<Article> articleList = Arrays.stream(searchHits)
-                .map(searchHit -> {
-                    try {
-                        return objectMapper.readValue(searchHit.getSourceAsString(), Article.class);
-                    } catch (JsonProcessingException e) {
-                        logger.error("Error while parsing article response", e);
-                        return null;
-                    }
-                })
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
-        logger.info("Searching completed");
-        return articleList;
+        if (searchResponse != null) {
+            SearchHits hits = searchResponse.getHits();
+            SearchHit[] searchHits = hits.getHits();
+            List<Article> articleList = Arrays.stream(searchHits)
+                    .map(searchHit -> {
+                        try {
+                            return objectMapper.readValue(searchHit.getSourceAsString(), Article.class);
+                        } catch (JsonProcessingException e) {
+                            logger.error("Error while parsing article response", e);
+                            return null;
+                        }
+                    })
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+            logger.info("Searching completed");
+            return articleList;
+        } else {
+            logger.info("Error in indexing article");
+            return null;
+        }
     }
 
     @Override
@@ -80,6 +87,16 @@ public class ArticleServiceImpl implements ArticleService {
         } else {
             logger.info("Article not found");
             return null;
+        }
+    }
+
+    @Override
+    public void deleteArticleById(String id) {
+        DeleteResponse deleteResponse = articleCustomRepository.deleteArticleById(id);
+        if (deleteResponse.getResult() == DocWriteResponse.Result.NOT_FOUND) {
+            logger.info("Article not found");
+        } else {
+            logger.info("Article deleted successfully");
         }
     }
 }
