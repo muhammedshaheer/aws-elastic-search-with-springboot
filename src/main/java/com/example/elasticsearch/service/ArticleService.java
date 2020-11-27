@@ -9,4 +9,6 @@ public interface ArticleService {
     void indexArticles(Article article);
 
     List<Article> getArticleByTitle(String title);
+
+    Article getArticleById(String id);
 }

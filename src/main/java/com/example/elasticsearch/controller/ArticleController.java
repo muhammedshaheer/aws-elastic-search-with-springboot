@@ -3,6 +3,7 @@ package com.example.elasticsearch.controller;
 import com.example.elasticsearch.document.Article;
 import com.example.elasticsearch.service.ArticleService;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -27,5 +28,10 @@ public class ArticleController {
     @GetMapping("/article")
     public List<Article> getArticleByTitle(@RequestParam(name = "title") String title) {
         return articleService.getArticleByTitle(title);
+    }
+
+    @GetMapping("/article/{id}")
+    public Article getArticleById(@PathVariable("id") String id){
+        return articleService.getArticleById(id);
     }
 }

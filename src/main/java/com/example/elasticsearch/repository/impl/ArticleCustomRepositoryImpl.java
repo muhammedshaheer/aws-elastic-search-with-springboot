@@ -4,6 +4,9 @@ import com.example.elasticsearch.document.Article;
 import com.example.elasticsearch.repository.ArticleCustomRepository;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.elasticsearch.ElasticsearchStatusException;
+import org.elasticsearch.action.get.GetRequest;
+import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequest;
@@ -12,6 +15,7 @@ import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.sort.SortOrder;
@@ -74,6 +78,24 @@ public class ArticleCustomRepositoryImpl implements ArticleCustomRepository {
             return restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
         } catch (IOException e) {
             logger.error("Error in searching articles", e);
+            return null;
+        }
+    }
+
+    @Override
+    public GetResponse findById(String id) {
+        GetRequest getRequest = new GetRequest();
+        getRequest.index(index).id(id);
+
+        try {
+            return restHighLevelClient.get(getRequest, RequestOptions.DEFAULT);
+        } catch (IOException e) {
+            logger.error("Error in getting article by id", e);
+            return null;
+        } catch (ElasticsearchStatusException e) {
+            if (e.status() == RestStatus.NOT_FOUND) {
+                logger.error("Invalid index", e);
+            }
             return null;
         }
     }

@@ -5,6 +5,7 @@ import com.example.elasticsearch.repository.ArticleCustomRepository;
 import com.example.elasticsearch.service.ArticleService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.search.SearchHit;
@@ -14,7 +15,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -64,5 +64,22 @@ public class ArticleServiceImpl implements ArticleService {
                 .collect(Collectors.toList());
         logger.info("Searching completed");
         return articleList;
+    }
+
+    @Override
+    public Article getArticleById(String id) {
+        GetResponse getResponse = articleCustomRepository.findById(id);
+        if (getResponse != null && getResponse.isExists()) {
+            logger.info("Article found");
+            try {
+                return objectMapper.readValue(getResponse.getSourceAsString(), Article.class);
+            } catch (JsonProcessingException e) {
+                logger.error("Error while parsing article response", e);
+                return null;
+            }
+        } else {
+            logger.info("Article not found");
+            return null;
+        }
     }
 }
