@@ -12,4 +12,6 @@ public interface ArticleService {
     Article getArticleById(String id);
 
     void deleteArticleById(String id);
+
+    Article updateArticleById(String id, Article article);
 }

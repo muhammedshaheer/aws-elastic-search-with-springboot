@@ -15,8 +15,6 @@ import java.util.List;
 public class Article {
 
     @Id
-    private String id;
-
     private String articleId;
 
     private String title;

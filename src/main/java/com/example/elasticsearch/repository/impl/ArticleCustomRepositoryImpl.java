@@ -13,6 +13,8 @@ import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.update.UpdateRequest;
+import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.index.query.BoolQueryBuilder;
@@ -49,7 +51,7 @@ public class ArticleCustomRepositoryImpl implements ArticleCustomRepository {
         Map<String, Object> articleMap = objectMapper.convertValue(article, new TypeReference<>() {
         });
         IndexRequest indexRequest = new IndexRequest(index)
-                .id(article.getId())
+                .id(article.getArticleId())
                 .source(articleMap);
 
         try {
@@ -120,6 +122,30 @@ public class ArticleCustomRepositoryImpl implements ArticleCustomRepository {
             return restHighLevelClient.delete(deleteRequest, RequestOptions.DEFAULT);
         } catch (IOException e) {
             logger.error("Error in deleting article by id", e);
+            return null;
+        } catch (ElasticsearchStatusException e) {
+            if (e.status() == RestStatus.NOT_FOUND) {
+                logger.error("Invalid index", e);
+            }
+            return null;
+        }
+    }
+
+    @Override
+    public UpdateResponse updateArticleById(String id, Article article) {
+        Map<String, Object> articleMap = objectMapper.convertValue(article, new TypeReference<>() {
+        });
+
+        UpdateRequest updateRequest = new UpdateRequest();
+        updateRequest.index(index).id(id);
+        updateRequest.doc(articleMap);
+        updateRequest.docAsUpsert(true);
+        updateRequest.fetchSource(true);
+
+        try {
+            return restHighLevelClient.update(updateRequest, RequestOptions.DEFAULT);
+        } catch (IOException e) {
+            logger.error("Error in updating article", e);
             return null;
         } catch (ElasticsearchStatusException e) {
             if (e.status() == RestStatus.NOT_FOUND) {

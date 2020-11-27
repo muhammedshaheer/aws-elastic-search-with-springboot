@@ -10,6 +10,8 @@ import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.update.UpdateResponse;
+import org.elasticsearch.index.get.GetResult;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.slf4j.Logger;
@@ -42,7 +44,6 @@ public class ArticleServiceImpl implements ArticleService {
     public void indexArticles(Article article) {
         UUID uuid = UUID.randomUUID();
         String articleId = uuid.toString();
-        article.setId(articleId);
         article.setArticleId(articleId);
         IndexResponse indexResponse = articleCustomRepository.indexArticles(article);
         logger.info("Indexing completed");
@@ -98,5 +99,29 @@ public class ArticleServiceImpl implements ArticleService {
         } else {
             logger.info("Article deleted successfully");
         }
+    }
+
+    @Override
+    public Article updateArticleById(String id, Article article) {
+        UpdateResponse updateResponse = articleCustomRepository.updateArticleById(id, article);
+        if (updateResponse != null) {
+            if (updateResponse.getResult() == DocWriteResponse.Result.CREATED) {
+                logger.info("New Article created");
+            } else if (updateResponse.getResult() == DocWriteResponse.Result.UPDATED) {
+                logger.info("Existing article updated");
+            } else if (updateResponse.getResult() == DocWriteResponse.Result.NOOP) {
+                logger.info("No changes to update the article");
+            }
+            GetResult getResult = updateResponse.getGetResult();
+            if (getResult.isExists()) {
+                try {
+                    return objectMapper.readValue(getResult.sourceAsString(), Article.class);
+                } catch (JsonProcessingException e) {
+                    logger.error("Error while parsing article response", e);
+                    return null;
+                }
+            }
+        }
+        return null;
     }
 }

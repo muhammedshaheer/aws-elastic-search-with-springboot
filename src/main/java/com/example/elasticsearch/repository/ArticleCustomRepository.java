@@ -5,6 +5,7 @@ import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.update.UpdateResponse;
 
 public interface ArticleCustomRepository {
     SearchResponse findByTitle(String title);
@@ -14,4 +15,6 @@ public interface ArticleCustomRepository {
     GetResponse findById(String id);
 
     DeleteResponse deleteArticleById(String id);
+
+    UpdateResponse updateArticleById(String id, Article article);
 }
