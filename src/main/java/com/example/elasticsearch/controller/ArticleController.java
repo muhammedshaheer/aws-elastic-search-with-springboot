@@ -1,6 +1,7 @@
 package com.example.elasticsearch.controller;
 
 import com.example.elasticsearch.document.Article;
+import com.example.elasticsearch.dto.BulkOperationDTO;
 import com.example.elasticsearch.service.ArticleService;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -45,5 +46,10 @@ public class ArticleController {
     @PutMapping("/article/{id}")
     public Article updateArticleById(@PathVariable("id") String id, @RequestBody Article article) {
         return articleService.updateArticleById(id, article);
+    }
+
+    @PostMapping("/article/bulk")
+    public void bulkOperation(@RequestBody BulkOperationDTO bulkOperation) {
+        articleService.bulkOperation(bulkOperation);
     }
 }

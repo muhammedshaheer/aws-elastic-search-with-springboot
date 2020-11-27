@@ -1,6 +1,8 @@
 package com.example.elasticsearch.repository;
 
 import com.example.elasticsearch.document.Article;
+import com.example.elasticsearch.dto.BulkOperationDTO;
+import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexResponse;
@@ -17,4 +19,6 @@ public interface ArticleCustomRepository {
     DeleteResponse deleteArticleById(String id);
 
     UpdateResponse updateArticleById(String id, Article article);
+
+    BulkResponse bulkOperation(BulkOperationDTO bulkOperation);
 }

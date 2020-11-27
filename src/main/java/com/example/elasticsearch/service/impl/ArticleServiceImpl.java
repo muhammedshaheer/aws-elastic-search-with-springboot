@@ -1,11 +1,14 @@
 package com.example.elasticsearch.service.impl;
 
 import com.example.elasticsearch.document.Article;
+import com.example.elasticsearch.dto.BulkOperationDTO;
 import com.example.elasticsearch.repository.ArticleCustomRepository;
 import com.example.elasticsearch.service.ArticleService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.elasticsearch.action.DocWriteResponse;
+import org.elasticsearch.action.bulk.BulkItemResponse;
+import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexResponse;
@@ -123,5 +126,12 @@ public class ArticleServiceImpl implements ArticleService {
             }
         }
         return null;
+    }
+
+    @Override
+    public void bulkOperation(BulkOperationDTO bulkOperation) {
+        BulkResponse bulkResponse = articleCustomRepository.bulkOperation(bulkOperation);
+        BulkItemResponse[] bulkResponseItems = bulkResponse.getItems();
+        logger.info("Bulk operation completed");
     }
 }

@@ -1,10 +1,13 @@
 package com.example.elasticsearch.repository.impl;
 
 import com.example.elasticsearch.document.Article;
+import com.example.elasticsearch.dto.BulkOperationDTO;
 import com.example.elasticsearch.repository.ArticleCustomRepository;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.elasticsearch.ElasticsearchStatusException;
+import org.elasticsearch.action.bulk.BulkRequest;
+import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.get.GetRequest;
@@ -29,7 +32,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @Repository
 public class ArticleCustomRepositoryImpl implements ArticleCustomRepository {
@@ -99,7 +104,8 @@ public class ArticleCustomRepositoryImpl implements ArticleCustomRepository {
     @Override
     public GetResponse findById(String id) {
         GetRequest getRequest = new GetRequest();
-        getRequest.index(index).id(id);
+        getRequest.index(index)
+                .id(id);
 
         try {
             return restHighLevelClient.get(getRequest, RequestOptions.DEFAULT);
@@ -137,10 +143,10 @@ public class ArticleCustomRepositoryImpl implements ArticleCustomRepository {
         });
 
         UpdateRequest updateRequest = new UpdateRequest();
-        updateRequest.index(index).id(id);
-        updateRequest.doc(articleMap);
-        updateRequest.docAsUpsert(true);
-        updateRequest.fetchSource(true);
+        updateRequest.index(index).id(id)
+                .doc(articleMap)
+                .docAsUpsert(true)
+                .fetchSource(true);
 
         try {
             return restHighLevelClient.update(updateRequest, RequestOptions.DEFAULT);
@@ -153,5 +159,49 @@ public class ArticleCustomRepositoryImpl implements ArticleCustomRepository {
             }
             return null;
         }
+    }
+
+    @Override
+    public BulkResponse bulkOperation(BulkOperationDTO bulkOperation) {
+        BulkRequest bulkRequest = new BulkRequest();
+
+        List<Article> indexArticleList = bulkOperation.getIndexArticle();
+        indexArticleList.forEach(article -> {
+            UUID uuid = UUID.randomUUID();
+            String articleId = uuid.toString();
+            article.setArticleId(articleId);
+            Map<String, Object> articleMap = objectMapper.convertValue(article, new TypeReference<>() {
+            });
+            IndexRequest indexRequest = new IndexRequest();
+            indexRequest.index(index)
+                    .id(article.getArticleId())
+                    .source(articleMap);
+            bulkRequest.add(indexRequest);
+        });
+
+        List<Article> updateArticleList = bulkOperation.getUpdateArticle();
+        updateArticleList.forEach(article -> {
+            Map<String, Object> articleMap = objectMapper.convertValue(article, new TypeReference<>() {
+            });
+            UpdateRequest updateRequest = new UpdateRequest();
+            updateRequest.index(index)
+                    .id(article.getArticleId())
+                    .doc(articleMap)
+                    .docAsUpsert(true);
+            bulkRequest.add(updateRequest);
+        });
+
+        List<String> deleteArticleList = bulkOperation.getDeleteArticle();
+        deleteArticleList.forEach(articleId -> {
+            DeleteRequest deleteRequest = new DeleteRequest(index, articleId);
+            bulkRequest.add(deleteRequest);
+        });
+
+        try {
+            return restHighLevelClient.bulk(bulkRequest, RequestOptions.DEFAULT);
+        } catch (IOException e) {
+            logger.error("Error in applying bulk operation");
+        }
+        return null;
     }
 }
