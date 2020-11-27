@@ -11,6 +11,8 @@ import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.get.GetResponse;
+import org.elasticsearch.action.get.MultiGetItemResponse;
+import org.elasticsearch.action.get.MultiGetResponse;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.update.UpdateResponse;
@@ -133,5 +135,28 @@ public class ArticleServiceImpl implements ArticleService {
         BulkResponse bulkResponse = articleCustomRepository.bulkOperation(bulkOperation);
         BulkItemResponse[] bulkResponseItems = bulkResponse.getItems();
         logger.info("Bulk operation completed");
+    }
+
+    @Override
+    public List<Article> getMultipleArticles(List<String> articleIdList) {
+        MultiGetResponse multiGetResponse = articleCustomRepository.getMultipleArticles(articleIdList);
+        logger.info("Completed getting multiple articles");
+        MultiGetItemResponse[] multiGetResponseList = multiGetResponse.getResponses();
+        return Arrays.stream(multiGetResponseList)
+                .map(multiGetItemResponse -> {
+                    GetResponse response = multiGetItemResponse.getResponse();
+                    if (response.isExists()) {
+                        try {
+                            return objectMapper.readValue(response.getSourceAsString(), Article.class);
+                        } catch (JsonProcessingException e) {
+                            logger.error("Error while parsing article response", e);
+                            return null;
+                        }
+                    } else {
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 }

@@ -5,9 +5,12 @@ import com.example.elasticsearch.dto.BulkOperationDTO;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.get.GetResponse;
+import org.elasticsearch.action.get.MultiGetResponse;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.update.UpdateResponse;
+
+import java.util.List;
 
 public interface ArticleCustomRepository {
     SearchResponse findByTitle(String title);
@@ -21,4 +24,6 @@ public interface ArticleCustomRepository {
     UpdateResponse updateArticleById(String id, Article article);
 
     BulkResponse bulkOperation(BulkOperationDTO bulkOperation);
+
+    MultiGetResponse getMultipleArticles(List<String> articleIdList);
 }

@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.LongSummaryStatistics;
 
 @RestController
 public class ArticleController {
@@ -51,5 +52,10 @@ public class ArticleController {
     @PostMapping("/article/bulk")
     public void bulkOperation(@RequestBody BulkOperationDTO bulkOperation) {
         articleService.bulkOperation(bulkOperation);
+    }
+
+    @PostMapping("/article/multi-get")
+    public List<Article> getMultipleArticles(@RequestBody List<String> articleIdList){
+        return articleService.getMultipleArticles(articleIdList);
     }
 }

@@ -17,4 +17,6 @@ public interface ArticleService {
     Article updateArticleById(String id, Article article);
 
     void bulkOperation(BulkOperationDTO bulkOperation);
+
+    List<Article> getMultipleArticles(List<String> articleIdList);
 }

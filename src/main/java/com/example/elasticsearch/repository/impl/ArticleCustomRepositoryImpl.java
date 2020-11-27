@@ -12,6 +12,8 @@ import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
+import org.elasticsearch.action.get.MultiGetRequest;
+import org.elasticsearch.action.get.MultiGetResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequest;
@@ -201,6 +203,21 @@ public class ArticleCustomRepositoryImpl implements ArticleCustomRepository {
             return restHighLevelClient.bulk(bulkRequest, RequestOptions.DEFAULT);
         } catch (IOException e) {
             logger.error("Error in applying bulk operation");
+        }
+        return null;
+    }
+
+    @Override
+    public MultiGetResponse getMultipleArticles(List<String> articleIdList) {
+        MultiGetRequest multiGetRequest = new MultiGetRequest();
+        articleIdList.forEach(articleId -> {
+            multiGetRequest.add(index, articleId);
+        });
+
+        try {
+            return restHighLevelClient.mget(multiGetRequest, RequestOptions.DEFAULT);
+        } catch (IOException e) {
+            logger.error("Error in getting multiple articles");
         }
         return null;
     }
