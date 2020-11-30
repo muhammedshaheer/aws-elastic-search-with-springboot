@@ -1,7 +1,9 @@
 package com.example.elasticsearch.repository.impl;
 
+import com.example.elasticsearch.config.AwsConfig;
 import com.example.elasticsearch.document.Article;
 import com.example.elasticsearch.dto.BulkOperationDTO;
+import com.example.elasticsearch.dto.ReIndexRequestDTO;
 import com.example.elasticsearch.repository.ArticleCustomRepository;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -24,13 +26,14 @@ import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.reindex.BulkByScrollResponse;
+import org.elasticsearch.index.reindex.ReindexRequest;
 import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
 import java.io.IOException;
@@ -42,19 +45,24 @@ import java.util.UUID;
 public class ArticleCustomRepositoryImpl implements ArticleCustomRepository {
     private static final Logger logger = LoggerFactory.getLogger(ArticleCustomRepositoryImpl.class);
 
-    @Value("${es.article.index.name}")
-    private String index;
+    private final String index;
 
     private final RestHighLevelClient restHighLevelClient;
     private final ObjectMapper objectMapper;
+    private final AwsConfig awsConfig;
 
-    public ArticleCustomRepositoryImpl(RestHighLevelClient restHighLevelClient, ObjectMapper objectMapper) {
+    public ArticleCustomRepositoryImpl(RestHighLevelClient restHighLevelClient, ObjectMapper objectMapper, AwsConfig awsConfig) {
         this.restHighLevelClient = restHighLevelClient;
         this.objectMapper = objectMapper;
+        this.awsConfig = awsConfig;
+        Map<String, Object> configArticle = awsConfig.getArticle();
+        index = (String) configArticle.get("index-name");
     }
 
     @Override
     public IndexResponse indexArticles(Article article) {
+        Map<String, Object> configArticle = awsConfig.getArticle();
+        configArticle.get("index-name");
         Map<String, Object> articleMap = objectMapper.convertValue(article, new TypeReference<>() {
         });
         IndexRequest indexRequest = new IndexRequest(index)
@@ -218,6 +226,23 @@ public class ArticleCustomRepositoryImpl implements ArticleCustomRepository {
             return restHighLevelClient.mget(multiGetRequest, RequestOptions.DEFAULT);
         } catch (IOException e) {
             logger.error("Error in getting multiple articles");
+        }
+        return null;
+    }
+
+    @Override
+    public BulkByScrollResponse reIndexArticles(ReIndexRequestDTO reIndexRequestDTO) {
+        ReindexRequest reindexRequest = new ReindexRequest();
+        List<String> sourceIndexes = reIndexRequestDTO.getSourceIndexes();
+        String[] sourceIndices = sourceIndexes.toArray(String[]::new);
+        reindexRequest.setSourceIndices(sourceIndices);
+        reindexRequest.setDestIndex(reIndexRequestDTO.getDestinationIndex());
+        reindexRequest.setRefresh(true);
+
+        try {
+            return restHighLevelClient.reindex(reindexRequest, RequestOptions.DEFAULT);
+        } catch (IOException e) {
+            logger.error("Error in reindexing articles");
         }
         return null;
     }

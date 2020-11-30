@@ -2,6 +2,7 @@ package com.example.elasticsearch.controller;
 
 import com.example.elasticsearch.document.Article;
 import com.example.elasticsearch.dto.BulkOperationDTO;
+import com.example.elasticsearch.dto.ReIndexRequestDTO;
 import com.example.elasticsearch.service.ArticleService;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.LongSummaryStatistics;
 
 @RestController
 public class ArticleController {
@@ -55,7 +55,12 @@ public class ArticleController {
     }
 
     @PostMapping("/article/multi-get")
-    public List<Article> getMultipleArticles(@RequestBody List<String> articleIdList){
+    public List<Article> getMultipleArticles(@RequestBody List<String> articleIdList) {
         return articleService.getMultipleArticles(articleIdList);
+    }
+
+    @PostMapping("/article/reindex")
+    public void reIndexArticles(@RequestBody ReIndexRequestDTO reIndexRequest) {
+        articleService.reIndexArticles(reIndexRequest);
     }
 }

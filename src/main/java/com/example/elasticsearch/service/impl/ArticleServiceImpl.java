@@ -2,6 +2,7 @@ package com.example.elasticsearch.service.impl;
 
 import com.example.elasticsearch.document.Article;
 import com.example.elasticsearch.dto.BulkOperationDTO;
+import com.example.elasticsearch.dto.ReIndexRequestDTO;
 import com.example.elasticsearch.repository.ArticleCustomRepository;
 import com.example.elasticsearch.service.ArticleService;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -17,11 +18,11 @@ import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.index.get.GetResult;
+import org.elasticsearch.index.reindex.BulkByScrollResponse;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
@@ -33,9 +34,6 @@ import java.util.stream.Collectors;
 @Service
 public class ArticleServiceImpl implements ArticleService {
     private static final Logger logger = LoggerFactory.getLogger(ArticleServiceImpl.class);
-
-    @Value("${es.article.index.name}")
-    private String index;
 
     private final ArticleCustomRepository articleCustomRepository;
     private final ObjectMapper objectMapper;
@@ -158,5 +156,15 @@ public class ArticleServiceImpl implements ArticleService {
                 })
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public void reIndexArticles(ReIndexRequestDTO reIndexRequest) {
+        BulkByScrollResponse bulkByScrollResponse = articleCustomRepository.reIndexArticles(reIndexRequest);
+        if (bulkByScrollResponse != null) {
+            long totalTimeTaken = bulkByScrollResponse.getTook().getMillis();
+            logger.info("Total time taken for reindexing is {}ms", totalTimeTaken);
+            logger.info(bulkByScrollResponse.toString());
+        }
     }
 }

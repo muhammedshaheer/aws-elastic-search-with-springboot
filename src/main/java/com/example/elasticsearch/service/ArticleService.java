@@ -2,6 +2,7 @@ package com.example.elasticsearch.service;
 
 import com.example.elasticsearch.document.Article;
 import com.example.elasticsearch.dto.BulkOperationDTO;
+import com.example.elasticsearch.dto.ReIndexRequestDTO;
 
 import java.util.List;
 
@@ -19,4 +20,6 @@ public interface ArticleService {
     void bulkOperation(BulkOperationDTO bulkOperation);
 
     List<Article> getMultipleArticles(List<String> articleIdList);
+
+    void reIndexArticles(ReIndexRequestDTO reIndexRequest);
 }
