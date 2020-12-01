@@ -30,4 +30,6 @@ public interface ArticleCustomRepository {
     MultiGetResponse getMultipleArticles(List<String> articleIdList);
 
     BulkByScrollResponse reIndexArticles(ReIndexRequestDTO reIndexRequest);
+
+    SearchResponse searchArticles(String keyword);
 }

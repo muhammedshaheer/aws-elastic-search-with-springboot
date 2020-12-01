@@ -22,4 +22,6 @@ public interface ArticleService {
     List<Article> getMultipleArticles(List<String> articleIdList);
 
     void reIndexArticles(ReIndexRequestDTO reIndexRequest);
+
+    List<Article> searchArticles(String keyword);
 }

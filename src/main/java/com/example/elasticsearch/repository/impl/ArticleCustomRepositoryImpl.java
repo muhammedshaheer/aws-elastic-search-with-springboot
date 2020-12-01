@@ -242,4 +242,26 @@ public class ArticleCustomRepositoryImpl implements ArticleCustomRepository {
         }
         return null;
     }
+
+    @Override
+    public SearchResponse searchArticles(String keyword) {
+        BoolQueryBuilder queryBuilder = QueryBuilders.boolQuery()
+                .should(QueryBuilders.termQuery("title.keyword", keyword))
+                .should(QueryBuilders.termQuery("authors.name.keyword", keyword))
+                .minimumShouldMatch(1);
+
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.query(queryBuilder);
+
+        SearchRequest searchRequest = new SearchRequest();
+        searchRequest.source(searchSourceBuilder);
+        searchRequest.indices(index);
+
+        try {
+            return restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
+        } catch (IOException e) {
+            logger.error("Error in searching articles");
+        }
+        return null;
+    }
 }

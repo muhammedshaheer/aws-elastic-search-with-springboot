@@ -167,4 +167,29 @@ public class ArticleServiceImpl implements ArticleService {
             logger.info(bulkByScrollResponse.toString());
         }
     }
+
+    @Override
+    public List<Article> searchArticles(String keyword) {
+        SearchResponse searchResponse = articleCustomRepository.searchArticles(keyword);
+        logger.info("Completed searching for articles");
+        if (searchResponse != null) {
+            SearchHits hits = searchResponse.getHits();
+            logger.info("Total number of search result count: {}", hits.getTotalHits().value);
+            SearchHit[] searchHits = hits.getHits();
+            return Arrays.stream(searchHits)
+                    .map(searchHit -> {
+                        try {
+                            return objectMapper.readValue(searchHit.getSourceAsString(), Article.class);
+                        } catch (JsonProcessingException e) {
+                            logger.error("Error while parsing article response", e);
+                            return null;
+                        }
+                    })
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+        } else {
+            logger.info("Total number of search result count: {}", 0);
+        }
+        return null;
+    }
 }

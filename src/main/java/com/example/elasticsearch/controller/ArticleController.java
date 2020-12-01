@@ -63,4 +63,9 @@ public class ArticleController {
     public void reIndexArticles(@RequestBody ReIndexRequestDTO reIndexRequest) {
         articleService.reIndexArticles(reIndexRequest);
     }
+
+    @PostMapping("/article/search")
+    public List<Article> searchArticles(@RequestParam(name = "keyword") String keyword) {
+        return articleService.searchArticles(keyword);
+    }
 }
