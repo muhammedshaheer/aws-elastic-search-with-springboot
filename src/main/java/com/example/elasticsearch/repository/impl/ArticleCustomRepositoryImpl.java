@@ -49,20 +49,16 @@ public class ArticleCustomRepositoryImpl implements ArticleCustomRepository {
 
     private final RestHighLevelClient restHighLevelClient;
     private final ObjectMapper objectMapper;
-    private final AwsConfig awsConfig;
 
     public ArticleCustomRepositoryImpl(RestHighLevelClient restHighLevelClient, ObjectMapper objectMapper, AwsConfig awsConfig) {
         this.restHighLevelClient = restHighLevelClient;
         this.objectMapper = objectMapper;
-        this.awsConfig = awsConfig;
         Map<String, Object> configArticle = awsConfig.getArticle();
         index = (String) configArticle.get("index-name");
     }
 
     @Override
     public IndexResponse indexArticles(Article article) {
-        Map<String, Object> configArticle = awsConfig.getArticle();
-        configArticle.get("index-name");
         Map<String, Object> articleMap = objectMapper.convertValue(article, new TypeReference<>() {
         });
         IndexRequest indexRequest = new IndexRequest(index)

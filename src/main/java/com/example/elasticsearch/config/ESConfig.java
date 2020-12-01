@@ -6,26 +6,27 @@ import org.apache.http.HttpHost;
 import org.apache.http.HttpRequestInterceptor;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.elasticsearch.config.AbstractElasticsearchConfiguration;
 import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories;
 
+import java.util.Map;
+
 @Configuration
 @EnableElasticsearchRepositories(basePackages = "com.example.elasticsearch.repository")
 public class ESConfig extends AbstractElasticsearchConfiguration {
 
-    @Value("${aws.es.endPoint}")
-    private String endPoint;
-
-    @Value("${aws.es.region}")
-    private String region;
+    private final String endPoint;
+    private final String region;
 
     private final AWSCredentialsProvider awsCredentialsProvider;
 
-    public ESConfig(AWSCredentialsProvider awsCredentialsProvider) {
+    public ESConfig(AWSCredentialsProvider awsCredentialsProvider, AwsCredentialsConfig awsCredentialsConfig) {
         this.awsCredentialsProvider = awsCredentialsProvider;
+        Map<String, Object> configEs = awsCredentialsConfig.getEs();
+        endPoint = (String) configEs.get("endPoint");
+        region = (String) configEs.get("region");
     }
 
     @Override

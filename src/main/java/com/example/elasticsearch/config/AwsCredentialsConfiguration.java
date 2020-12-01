@@ -2,18 +2,22 @@ package com.example.elasticsearch.config;
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import java.util.Map;
 
 @Configuration
 public class AwsCredentialsConfiguration {
 
-    @Value("${aws.es.accessKey}")
-    private String esAccessKey;
+    private final String esAccessKey;
+    private final String esSecretKey;
 
-    @Value("${aws.es.secretKey}")
-    private String esSecretKey;
+    public AwsCredentialsConfiguration(AwsCredentialsConfig awsCredentialsConfig) {
+        Map<String, Object> configEs = awsCredentialsConfig.getEs();
+        esAccessKey = (String) configEs.get("accessKey");
+        esSecretKey = (String) configEs.get("secretKey");
+    }
 
     @Bean
     public AWSStaticCredentialsProvider awsStaticCredentialsProvider() {
